@@ -75,7 +75,11 @@ n2 = fileIn.split('_')[2]
 n3 = fileIn.split('_')[3]
 n4 = fileIn.split('_')[4]
 n5 = fileIn.split('_')[5]
-nL = n1 + '_' + n2 + '_' + n3 + '_' + n4 + '_' + n5
+if (n5 == 'E'):
+	n5a = n5 + 'E'
+elif (n5 == 'W'):
+	n5a = n5 + 'W'
+nL = n1 + '_' + n2 + '_' + n3 + '_' + n4 + '_' + n5a
 
 if (n3 == '2-S'):
 	kp1 = '2S'
@@ -108,7 +112,9 @@ if (n8 == 'Capacitor'):
 	struct = 'CAP' + '_' + n5
 	waitTime = '0.100'
 	extTabNam = 'TEST_SENSOR_CV'
+	extTabNam2 = 'HALFMOON_CV_PAR'
 	nameTest = 'Tracker Halfmoon CV Test'
+	nameTest2 = 'Tracker Halfmoon CV Parameters'
 	versionMeas = 'CV_measurement-004'
 	
 n9 = fileIn.split('_')[9]
@@ -176,9 +182,9 @@ kindOfPart2 = ET.SubElement(partnew2, "KIND_OF_PART").text = kp
 for i in range(voltageArr.size):
 	voltageNum = voltageArr[i]
 	voltage = str(voltageNum)
-	capacitanceNum = capacitanceArr[i]
+	capacitanceNum = (1E12)*capacitanceArr[i]
 	capacitance = str(capacitanceNum)
-	resistanceNum = resistanceArr[i]
+	resistanceNum = (1E-6)/(resistanceArr[i])
 	resistance = str(resistanceNum)
 	temperatureNum = temperatureArr[i]
 	temperature = str(temperatureNum)
@@ -196,11 +202,11 @@ for i in range(voltageArr.size):
 	airTempDegC = ET.SubElement(data2, "AIR_TEMP_DEGC").text = airTemperature
 	RHPrcnt = ET.SubElement(data2, "RH_PRCNT").text = RH
 
-childDataSet2 = ET.SubElement(dataset2, "DATA")
+childDataSet2 = ET.SubElement(dataset2, "CHILD_DATA_SET")
 header3 = ET.SubElement(childDataSet2, "HEADER")
 type3 = ET.SubElement(header3, "TYPE")
-extensionTableName2 = ET.SubElement(type3, "EXTENSION_TABLE_NAME").text = extTabNam
-name3 = ET.SubElement(type3, "NAME").text = nameTest
+extensionTableName2 = ET.SubElement(type3, "EXTENSION_TABLE_NAME").text = extTabNam2
+name3 = ET.SubElement(type3, "NAME").text = nameTest2
 dataset3 = ET.SubElement(childDataSet2, "DATA_SET")
 commentDescription4 = ET.SubElement(dataset3, "COMMENT_DESCRIPTION").text = "Test"
 version3 = ET.SubElement(dataset3, "VERSION").text = versionMeas
@@ -227,7 +233,4 @@ with open(fileIn, 'r') as fin1:
 with open(fileOut, 'w') as fout1:
 	fout1.write(part1 + ' encoding=\"{}\"'.format(m_encoding) + ' standalone=\"{}\"?>\n'.format(m_standalone)  + part2)
 	fout1.close()
-
-
-# https://www.mytecbits.com/internet/python/addition-and-subtraction-of-time
 
