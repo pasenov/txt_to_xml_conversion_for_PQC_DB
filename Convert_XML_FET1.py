@@ -214,3 +214,4 @@ with open(fileOut, 'w') as fout1:
 	fout1.write(part1 + ' encoding=\"{}\"'.format(m_encoding) + ' standalone=\"{}\"?>\n'.format(m_standalone)  + part2)
 	fout1.close()
 
+os.remove(fileNew)

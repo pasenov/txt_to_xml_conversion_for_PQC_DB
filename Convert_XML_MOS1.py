@@ -27,7 +27,7 @@ import openpyxl
 from pathlib import Path
 
 fileXLSX = '34352_038_2-S_HM_E.xlsx'
-fileName = 'HPK_34352_038_2-S_HM_E_flute1_L_Capacitor_10kHz_250mV_4_2_2021_18h31m41s'
+fileName = 'HPK_34352_038_2-S_HM_E_flute1_L_MOS_4_2_2021_18h43m1s'
 
 fileIn = fileName + '.txt'
 fileNew = fileName + '_new.txt'
@@ -50,14 +50,14 @@ temperatureArr = FData[:, 3]
 airTemperatureArr = FData[:, 4]
 RHArr = FData[:, 5]
 
-dayData = fileIn.split('_')[11]
+dayData = fileIn.split('_')[9]
 if (int(dayData) < 10):
 	dayData = '0' + dayData
-monthData = fileIn.split('_')[12]
+monthData = fileIn.split('_')[10]
 if (int(monthData) < 10):
 	monthData = '0' + monthData
-yearData = fileIn.split('_')[13]
-a14 = fileIn.split('_')[14]
+yearData = fileIn.split('_')[11]
+a14 = fileIn.split('_')[12]
 hourData = a14.split('h')[0]
 b2 = a14.split('h')[1]
 minuteData = b2.split('m')[0]
@@ -113,8 +113,8 @@ elif (n6 == 'flute4'):
 	flutePos = '4'
 	
 n8 = fileIn.split('_')[8]
-if (n8 == 'Capacitor'):
-	struct = 'CAP' + '_' + n5
+if (n8 == 'MOS'):
+	struct = 'MOS_QUARTER'
 	waitTime = '0.100'
 	extTabNam = 'TEST_SENSOR_CV'
 	extTabNam2 = 'HALFMOON_CV_PAR'
@@ -122,14 +122,10 @@ if (n8 == 'Capacitor'):
 	nameTest2 = 'Tracker Halfmoon CV Parameters'
 	versionMeas = 'CV_measurement-004'
 	
-n9 = fileIn.split('_')[9]
-freqkHz = n9.split('kHz')[0]
+freqkHz = 10
 freqHz = 1000*int(freqkHz)
 
-n10 = fileIn.split('_')[10]
-voltmV = n10.split('mV')[0]
-
-
+voltmV = '250'
 
 	
 m_encoding = 'UTF-8'
@@ -190,7 +186,7 @@ for i in range(voltageArr.size):
 	capacitanceNum = (1E12)*capacitanceArr[i]
 	capacitanceNum = round(capacitanceNum, 3)
 	capacitance = str(capacitanceNum)
-	resistanceNum = (1E-6)/(resistanceArr[i])
+	resistanceNum = (1E-6)*(resistanceArr[i])
 	resistanceNum = round(resistanceNum, 3)
 	resistance = str(resistanceNum)
 	temperatureNum = temperatureArr[i]
@@ -222,13 +218,21 @@ nameLabel3 = ET.SubElement(partnew3, "NAME_LABEL").text = nL
 kindOfPart3 = ET.SubElement(partnew3, "KIND_OF_PART").text = kp
 data3 = ET.SubElement(dataset3, "DATA")
 
-CACAvInit = np.mean(capacitanceArr, axis=0)
+wb_obj = openpyxl.load_workbook(fileXLSX) 
+sheet = wb_obj.active
+Vfb = (-1)*sheet["B7"].value
+Vfb = round(Vfb, 3)
+VfbV = ET.SubElement(data3, "VFB_V").text = str(Vfb)
+
+capacitanceArrLast10 = capacitanceArr[-10:]
+CACAvInit = np.mean(capacitanceArrLast10, axis=0)
 CACAv = CACAvInit*(1E12)
 CACAv = round(CACAv, 3)
-tox = 3.9*8.854*16900/(1000*CACAv)
-tox = round(tox, 3)
 CACPfrd = ET.SubElement(data3, "CAC_PFRD").text = str(CACAv)
-DOxNm = ET.SubElement(data3, "DOX_NM").text = str(tox)
+
+Nox = (1E-4)*CACAvInit*(-0.68 - Vfb)/(1.602*(1E-19)*1.29*(1E-3)*1.29*(1E-3))
+Nox = round(Nox, 3)
+NoxCm2 = ET.SubElement(data3, "NOX").text = str(Nox)
 
 dom = xml.dom.minidom.parseString(ET.tostring(root))
 xml_string = dom.toprettyxml()
