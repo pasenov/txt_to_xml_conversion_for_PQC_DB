@@ -27,7 +27,7 @@ import openpyxl
 from pathlib import Path
 
 fileXLSX = '34352_038_2-S_HM_E.xlsx'
-fileName = 'HPK_34352_038_2-S_HM_E_flute1_L_Poly_4_2_2021_18h31m59s'
+fileName = 'HPK_34352_038_2-S_HM_E_flute1_L_pstop_4_2_2021_18h32m34s'
 
 fileIn = fileName + '.txt'
 fileNew = fileName + '_new.txt'
@@ -117,8 +117,8 @@ elif (n6 == 'flute4'):
 	flutePos = '4'
 	
 n8 = fileIn.split('_')[8]
-if (n8 == 'Poly'):
-	struct = 'VDP_POLY'
+if (n8 == 'pstop'):
+	struct = 'VDP_STOP'
 	waitTime = '0.200'
 	extTabNam = 'TEST_SENSOR_IV'
 	extTabNam2 = 'HALFMOON_IV_PAR'
@@ -158,7 +158,7 @@ kindOfHMFluteID = ET.SubElement(data, "KIND_OF_HM_FLUTE_ID").text = flute
 kindOfHMStructID = ET.SubElement(data, "KIND_OF_HM_STRUCT_ID").text = struct
 kindOfHMConfigID = ET.SubElement(data, "KIND_OF_HM_CONFIG_ID").text = "Standard"
 
-procedureType = ET.SubElement(data, "PROCEDURE_TYPE").text = 'VdP-polySi'
+procedureType = ET.SubElement(data, "PROCEDURE_TYPE").text = 'VdP-pstop'
 fileName = ET.SubElement(data, "FILE_NAME").text = fileIn
 equipment = ET.SubElement(data, "EQUIPMENT").text = "PQC_HM_POSITION " + flutePos
 waitingTimeS = ET.SubElement(data, "WAITING_TIME_S").text = waitTime
@@ -216,7 +216,7 @@ data3 = ET.SubElement(dataset3, "DATA")
 
 wb_obj = openpyxl.load_workbook(fileXLSX) 
 sheet = wb_obj.active
-Res = sheet["B3"].value
+Res = sheet["B5"].value
 Res = round(Res, 3)
 RshOhmsqr = ET.SubElement(data3, "RSH_OHMSQR").text = str(Res)
 ROhm = ET.SubElement(data3, "R_OHM").text = ROhm_value
