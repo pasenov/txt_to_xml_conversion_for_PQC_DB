@@ -150,7 +150,7 @@ kindOfHMFluteID = ET.SubElement(data, "KIND_OF_HM_FLUTE_ID").text = flute
 kindOfHMStructID = ET.SubElement(data, "KIND_OF_HM_STRUCT_ID").text = struct
 kindOfHMConfigID = ET.SubElement(data, "KIND_OF_HM_CONFIG_ID").text = "Not Used"
 
-procedureType = ET.SubElement(data, "PROCEDURE_TYPE").text = n8
+procedureType = ET.SubElement(data, "PROCEDURE_TYPE").text = 'FET1'
 fileName = ET.SubElement(data, "FILE_NAME").text = fileIn
 equipment = ET.SubElement(data, "EQUIPMENT").text = "PQC_HM_POSITION " + flutePos
 waitingTimeS = ET.SubElement(data, "WAITING_TIME_S").text = waitTime

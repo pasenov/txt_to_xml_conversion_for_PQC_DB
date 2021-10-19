@@ -27,11 +27,16 @@ import openpyxl
 from pathlib import Path
 
 fileXLSX = '34352_038_2-S_HM_E.xlsx'
-fileName = 'HPK_34352_038_2-S_HM_E_flute1_L_Capacitor_10kHz_250mV_4_2_2021_18h31m41s'
+fileName = 'HPK_34352_038_2-S_HM_E_flute2_L_PolyMeander_4_2_2021_18h19m19s'
 
 fileIn = fileName + '.txt'
 fileNew = fileName + '_new.txt'
 fileOut = fileName + '.xml'
+
+with open(fileIn) as fFirst:
+	first_line = fFirst.readline()
+	
+ROhm_value = first_line.split('\t')[1]
 
 with open(fileIn, 'r') as fin:
 	dataIn = fin.read().splitlines(True)
@@ -44,20 +49,19 @@ with open(fileNew) as f:
 	FData = np.loadtxt(lines, delimiter='\t', skiprows=0)
 	
 voltageArr = FData[:, 0]
-capacitanceArr = FData[:, 1]
-resistanceArr = FData[:, 2]
-temperatureArr = FData[:, 3]
-airTemperatureArr = FData[:, 4]
-RHArr = FData[:, 5]
+currentArr = FData[:, 1]
+temperatureArr = FData[:, 2]
+airTemperatureArr = FData[:, 3]
+RHArr = FData[:, 4]
 
-dayData = fileIn.split('_')[11]
+dayData = fileIn.split('_')[9]
 if (int(dayData) < 10):
 	dayData = '0' + dayData
-monthData = fileIn.split('_')[12]
+monthData = fileIn.split('_')[10]
 if (int(monthData) < 10):
 	monthData = '0' + monthData
-yearData = fileIn.split('_')[13]
-a14 = fileIn.split('_')[14]
+yearData = fileIn.split('_')[11]
+a14 = fileIn.split('_')[12]
 hourData = a14.split('h')[0]
 b2 = a14.split('h')[1]
 minuteData = b2.split('m')[0]
@@ -113,22 +117,14 @@ elif (n6 == 'flute4'):
 	flutePos = '4'
 	
 n8 = fileIn.split('_')[8]
-if (n8 == 'Capacitor'):
-	struct = 'CAP' + '_' + n5
-	waitTime = '0.100'
-	extTabNam = 'TEST_SENSOR_CV'
-	extTabNam2 = 'HALFMOON_CV_PAR'
-	nameTest = 'Tracker Halfmoon CV Test'
-	nameTest2 = 'Tracker Halfmoon CV Parameters'
-	versionMeas = 'CV_measurement-004'
-	
-n9 = fileIn.split('_')[9]
-freqkHz = n9.split('kHz')[0]
-freqHz = 1000*int(freqkHz)
-
-n10 = fileIn.split('_')[10]
-voltmV = n10.split('mV')[0]
-
+if (n8 == 'PolyMeander'):
+	struct = 'R_POLY'
+	waitTime = '0.200'
+	extTabNam = 'TEST_SENSOR_IV'
+	extTabNam2 = 'HALFMOON_IV_PAR'
+	nameTest = 'Tracker Halfmoon IV Test'
+	nameTest2 = 'Tracker Halfmoon IV Parameters'
+	versionMeas = 'IV_measurement-004'
 
 
 	
@@ -162,15 +158,12 @@ kindOfHMFluteID = ET.SubElement(data, "KIND_OF_HM_FLUTE_ID").text = flute
 kindOfHMStructID = ET.SubElement(data, "KIND_OF_HM_STRUCT_ID").text = struct
 kindOfHMConfigID = ET.SubElement(data, "KIND_OF_HM_CONFIG_ID").text = "Not Used"
 
-procedureType = ET.SubElement(data, "PROCEDURE_TYPE").text = 'Capacitor'
+procedureType = ET.SubElement(data, "PROCEDURE_TYPE").text = 'MeanderPolySi'
 fileName = ET.SubElement(data, "FILE_NAME").text = fileIn
 equipment = ET.SubElement(data, "EQUIPMENT").text = "PQC_HM_POSITION " + flutePos
 waitingTimeS = ET.SubElement(data, "WAITING_TIME_S").text = waitTime
-ACFreqHz = ET.SubElement(data, "AC_FREQ_HZ").text = str(freqHz)
-ACAmplV = ET.SubElement(data, "AC_AMPL_V").text = '0.' + voltmV
 tempSetDegC = ET.SubElement(data, "TEMP_SET_DEGC").text = '20.'
 avTempDegC = ET.SubElement(data, "AV_TEMP_DEGC").text = '20.000'
-corrOpenPfrd = ET.SubElement(data, "CORR_OPEN_PFRD").text = '0.2'
 
 childDataSet = ET.SubElement(data_set, "CHILD_DATA_SET")
 header2 = ET.SubElement(childDataSet, "HEADER")
@@ -187,12 +180,9 @@ kindOfPart2 = ET.SubElement(partnew2, "KIND_OF_PART").text = kp
 for i in range(voltageArr.size):
 	voltageNum = voltageArr[i]
 	voltage = str(voltageNum)
-	capacitanceNum = (1E12)*capacitanceArr[i]
-	capacitanceNum = round(capacitanceNum, 3)
-	capacitance = str(capacitanceNum)
-	resistanceNum = (1E-6)/(resistanceArr[i])
-	resistanceNum = round(resistanceNum, 3)
-	resistance = str(resistanceNum)
+	currentNum = (1E9)*currentArr[i]
+	currentNum = round(currentNum, 3)
+	current = str(currentNum)
 	temperatureNum = temperatureArr[i]
 	temperature = str(temperatureNum)
 	airTemperatureNum = airTemperatureArr[i]
@@ -203,8 +193,7 @@ for i in range(voltageArr.size):
 	data2 = ET.SubElement(dataset2, "DATA")
 	time = ET.SubElement(data2, "TIME").text = str(datetime_new)
 	volts = ET.SubElement(data2, "VOLTS").text = voltage
-	capctncPfrd = ET.SubElement(data2, "CAPCTNC_PFRD").text = capacitance
-	resstncMohm = ET.SubElement(data2, "RESSTNC_MOHM").text = resistance
+	currntNamp = ET.SubElement(data2, "CURRNT_NAMP").text = current
 	tempDegC = ET.SubElement(data2, "TEMP_DEGC").text = temperature
 	airTempDegC = ET.SubElement(data2, "AIR_TEMP_DEGC").text = airTemperature
 	RHPrcnt = ET.SubElement(data2, "RH_PRCNT").text = RH
@@ -222,13 +211,15 @@ nameLabel3 = ET.SubElement(partnew3, "NAME_LABEL").text = nL
 kindOfPart3 = ET.SubElement(partnew3, "KIND_OF_PART").text = kp
 data3 = ET.SubElement(dataset3, "DATA")
 
-CACAvInit = np.mean(capacitanceArr, axis=0)
-CACAv = CACAvInit*(1E12)
-CACAv = round(CACAv, 3)
-tox = 3.9*8.854*16900/(1000*CACAv)
-tox = round(tox, 3)
-CACPfrd = ET.SubElement(data3, "CAC_PFRD").text = str(CACAv)
-DOxNm = ET.SubElement(data3, "DOX_NM").text = str(tox)
+wb_obj = openpyxl.load_workbook(fileXLSX) 
+sheet = wb_obj.active
+Rpoly = (1E-6)*(sheet["B9"].value)
+Rpoly = round(Rpoly, 3)
+RpolyMohm = ET.SubElement(data3, "RPOLY_MOHM").text = str(Rpoly)
+Rsh = 2100.60914454*Rpoly
+Rsh = round(Rsh, 3)
+RshOhmSqr = ET.SubElement(data3, "RSH_OHMSQR").text = str(Rsh)
+
 
 dom = xml.dom.minidom.parseString(ET.tostring(root))
 xml_string = dom.toprettyxml()
