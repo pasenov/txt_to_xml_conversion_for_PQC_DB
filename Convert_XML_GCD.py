@@ -116,7 +116,7 @@ if (n8 == 'GCD'):
 	extTabNam2 = 'HALFMOON_IV_PAR'
 	nameTest = 'Tracker Halfmoon IV Test'
 	nameTest2 = 'Tracker Halfmoon IV Parameters'
-	versionMeas = 'TC_measurement-004'
+	versionMeas = 'IV_measurement-004'
 
 
 	
@@ -206,7 +206,7 @@ IsurfPampr = ET.SubElement(data3, "ISURF_PAMPR").text = str(Isurf)
 s0 = sheet["B10"].value
 s0 = round(s0, 3)
 S0CmSec = ET.SubElement(data3, "S0_CMSEC").text = str(s0)
-VfbAcc = sheet["B11"].value
+VfbAcc = 5 + sheet["B11"].value
 VfbAcc = round(VfbAcc, 3)
 VfbAccV = ET.SubElement(data3, "VFB_ACC_V").text = str(VfbAcc)
 

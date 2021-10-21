@@ -27,21 +27,16 @@ import openpyxl
 from pathlib import Path
 
 fileXLSX = '34352_038_2-S_HM_E.xlsx'
-fileName = 'HPK_34352_038_2-S_HM_W_flute3_L_BulckCross_4_2_2021_18h8m38s'
+fileName = 'HPK_34352_038_2-S_HM_W_flute3_L_DiodeCV_4_2_2021_18h16m37s'
 
 fileIn = fileName + '.txt'
 fileNew = fileName + '_new.txt'
 fileOut = fileName + '.xml'
 
-with open(fileIn) as fFirst:
-	first_line = fFirst.readline()
-	
-ROhm_value = first_line.split('\t')[1]
-
 with open(fileIn, 'r') as fin:
 	dataIn = fin.read().splitlines(True)
 with open(fileNew, 'w') as fout:
-	fout.writelines(dataIn[2:])
+	fout.writelines(dataIn[1:])
 	
 
 with open(fileNew) as f:
@@ -49,10 +44,11 @@ with open(fileNew) as f:
 	FData = np.loadtxt(lines, delimiter='\t', skiprows=0)
 	
 voltageArr = FData[:, 0]
-currentArr = FData[:, 1]
-temperatureArr = FData[:, 2]
-airTemperatureArr = FData[:, 3]
-RHArr = FData[:, 4]
+capacitanceArr = FData[:, 1]
+resistanceArr = FData[:, 2]
+temperatureArr = FData[:, 3]
+airTemperatureArr = FData[:, 4]
+RHArr = FData[:, 5]
 
 dayData = fileIn.split('_')[9]
 if (int(dayData) < 10):
@@ -117,17 +113,14 @@ elif (n6 == 'flute4'):
 	flutePos = '4'
 	
 n8 = fileIn.split('_')[8]
-n9 = fileIn.split('_')[9]
-n10 = fileIn.split('_')[10]
-if (n8 == 'BulckCross'):
-	struct = 'VDP_BULK'
-	waitTime = '0.200'
-	extTabNam = 'TEST_SENSOR_IV'
-	extTabNam2 = 'HALFMOON_IV_PAR'
-	nameTest = 'Tracker Halfmoon IV Test'
-	nameTest2 = 'Tracker Halfmoon IV Parameters'
-	versionMeas = 'IV_measurement-004'
-
+if (n8 == 'DiodeCV'):
+	struct = 'DIODE_HALF'
+	waitTime = '0.500'
+	extTabNam = 'TEST_SENSOR_CV'
+	extTabNam2 = 'HALFMOON_CV_PAR'
+	nameTest = 'Tracker Halfmoon CV Test'
+	nameTest2 = 'Tracker Halfmoon CV Parameters'
+	versionMeas = 'CV_measurement-004'
 
 	
 m_encoding = 'UTF-8'
@@ -158,14 +151,15 @@ data = ET.SubElement(data_set, "DATA")
 kindOfHMSetID = ET.SubElement(data, "KIND_OF_HM_SET_ID").text = pos
 kindOfHMFluteID = ET.SubElement(data, "KIND_OF_HM_FLUTE_ID").text = flute
 kindOfHMStructID = ET.SubElement(data, "KIND_OF_HM_STRUCT_ID").text = struct
-kindOfHMConfigID = ET.SubElement(data, "KIND_OF_HM_CONFIG_ID").text = "Standard"
+kindOfHMConfigID = ET.SubElement(data, "KIND_OF_HM_CONFIG_ID").text = "Not Used"
 
-procedureType = ET.SubElement(data, "PROCEDURE_TYPE").text = 'Meander'
+procedureType = ET.SubElement(data, "PROCEDURE_TYPE").text = 'DiodeCV'
 fileName = ET.SubElement(data, "FILE_NAME").text = fileIn
 equipment = ET.SubElement(data, "EQUIPMENT").text = "PQC_HM_POSITION " + flutePos
 waitingTimeS = ET.SubElement(data, "WAITING_TIME_S").text = waitTime
 tempSetDegC = ET.SubElement(data, "TEMP_SET_DEGC").text = '20.'
 avTempDegC = ET.SubElement(data, "AV_TEMP_DEGC").text = '20.000'
+corrOpenPfrd = ET.SubElement(data, "CORR_OPEN_PFRD").text = '0.2'
 
 childDataSet = ET.SubElement(data_set, "CHILD_DATA_SET")
 header2 = ET.SubElement(childDataSet, "HEADER")
@@ -182,9 +176,12 @@ kindOfPart2 = ET.SubElement(partnew2, "KIND_OF_PART").text = kp
 for i in range(voltageArr.size):
 	voltageNum = voltageArr[i]
 	voltage = str(voltageNum)
-	currentNum = (1E9)*currentArr[i]
-	currentNum = round(currentNum, 3)
-	current = str(currentNum)
+	capacitanceNum = (1E12)*capacitanceArr[i]
+	capacitanceNum = round(capacitanceNum, 3)
+	capacitance = str(capacitanceNum)
+	resistanceNum = (1E-6)*(resistanceArr[i])
+	resistanceNum = round(resistanceNum, 3)
+	resistance = str(resistanceNum)
 	temperatureNum = temperatureArr[i]
 	temperature = str(temperatureNum)
 	airTemperatureNum = airTemperatureArr[i]
@@ -195,7 +192,8 @@ for i in range(voltageArr.size):
 	data2 = ET.SubElement(dataset2, "DATA")
 	time = ET.SubElement(data2, "TIME").text = str(datetime_new)
 	volts = ET.SubElement(data2, "VOLTS").text = voltage
-	currntNamp = ET.SubElement(data2, "CURRNT_NAMP").text = current
+	capctncPfrd = ET.SubElement(data2, "CAPCTNC_PFRD").text = capacitance
+	resstncMohm = ET.SubElement(data2, "RESSTNC_MOHM").text = resistance
 	tempDegC = ET.SubElement(data2, "TEMP_DEGC").text = temperature
 	airTempDegC = ET.SubElement(data2, "AIR_TEMP_DEGC").text = airTemperature
 	RHPrcnt = ET.SubElement(data2, "RH_PRCNT").text = RH
@@ -215,14 +213,26 @@ data3 = ET.SubElement(dataset3, "DATA")
 
 wb_obj = openpyxl.load_workbook(fileXLSX) 
 sheet = wb_obj.active
-Rsh = (float(ROhm_value))*4.53235882651
-Rsh = round(Rsh, 3)
-RshOhmsqr = ET.SubElement(data3, "RSH_OHMSQR").text = str(Rsh)
-ROhm = ET.SubElement(data3, "R_OHM").text = ROhm_value
-Rho = 290*(1E-6)*290*(1E-6)/(10*2*8.854*(1E-12)*11.68*483.78*(1E-4)*(sheet["B16"].value))
+Vd = sheet["B16"].value
+Vd = round(Vd, 3)
+VdV = ET.SubElement(data3, "VD_V").text = str(Vd)
+CapMin = (min(capacitanceArr))*(1E12)
+CapMin = round(CapMin, 3)
+CminPfrd = ET.SubElement(data3, "CMIN_PFRD").text = str(CapMin)
+tox = (1E-3)*3.9*8.854*16900/CapMin
+tox = round(tox, 3)
+DUm = ET.SubElement(data3, "D_UM").text = str(tox)
+capacitanceArrSq = np.square(capacitanceArr)
+capacitanceArrSqRec = np.reciprocal(capacitanceArrSq)
+dy = np.diff(capacitanceArrSqRec,1)
+dx = np.diff(voltageArr,1)
+yfirst = (-1)*dy/dx
+Na = (1E-18)*2/(1.6*(1E-19)*8.854*(1E-12)*11.68*2.5*2.5*(1E-6)*2.5*2.5*(1E-6)*yfirst[0])
+Na = round(Na, 3)
+NA1 = ET.SubElement(data3, "NA").text = str(Na)
+Rho = 290*(1E-6)*290*(1E-6)/(10*2*8.854*(1E-12)*11.68*483.78*(1E-4)*Vd)
 Rho = round(Rho, 3)
 RhoKohmcm = ET.SubElement(data3, "RHO_KOHMCM").text = str(Rho)
-
 
 
 

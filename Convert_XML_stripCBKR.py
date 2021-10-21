@@ -27,7 +27,7 @@ import openpyxl
 from pathlib import Path
 
 fileXLSX = '34352_038_2-S_HM_E.xlsx'
-fileName = 'HPK_34352_038_2-S_HM_W_flute3_L_BulckCross_4_2_2021_18h8m38s'
+fileName = 'HPK_34352_038_2-S_HM_E_flute4_L_n+CBKR_4_2_2021_17h45m21s'
 
 fileIn = fileName + '.txt'
 fileNew = fileName + '_new.txt'
@@ -117,10 +117,8 @@ elif (n6 == 'flute4'):
 	flutePos = '4'
 	
 n8 = fileIn.split('_')[8]
-n9 = fileIn.split('_')[9]
-n10 = fileIn.split('_')[10]
-if (n8 == 'BulckCross'):
-	struct = 'VDP_BULK'
+if (n8 == 'n+CBKR'):
+	struct = 'CBKR_STRIP'
 	waitTime = '0.200'
 	extTabNam = 'TEST_SENSOR_IV'
 	extTabNam2 = 'HALFMOON_IV_PAR'
@@ -160,7 +158,7 @@ kindOfHMFluteID = ET.SubElement(data, "KIND_OF_HM_FLUTE_ID").text = flute
 kindOfHMStructID = ET.SubElement(data, "KIND_OF_HM_STRUCT_ID").text = struct
 kindOfHMConfigID = ET.SubElement(data, "KIND_OF_HM_CONFIG_ID").text = "Standard"
 
-procedureType = ET.SubElement(data, "PROCEDURE_TYPE").text = 'Meander'
+procedureType = ET.SubElement(data, "PROCEDURE_TYPE").text = 'CBKR-strip'
 fileName = ET.SubElement(data, "FILE_NAME").text = fileIn
 equipment = ET.SubElement(data, "EQUIPMENT").text = "PQC_HM_POSITION " + flutePos
 waitingTimeS = ET.SubElement(data, "WAITING_TIME_S").text = waitTime
@@ -191,6 +189,8 @@ for i in range(voltageArr.size):
 	airTemperature = str(airTemperatureNum)
 	RHNum = RHArr[i]
 	RH = str(RHNum)
+
+
 	datetime_new = datetime_new + time_delta
 	data2 = ET.SubElement(dataset2, "DATA")
 	time = ET.SubElement(data2, "TIME").text = str(datetime_new)
@@ -199,6 +199,7 @@ for i in range(voltageArr.size):
 	tempDegC = ET.SubElement(data2, "TEMP_DEGC").text = temperature
 	airTempDegC = ET.SubElement(data2, "AIR_TEMP_DEGC").text = airTemperature
 	RHPrcnt = ET.SubElement(data2, "RH_PRCNT").text = RH
+
 
 childDataSet2 = ET.SubElement(dataset2, "CHILD_DATA_SET")
 header3 = ET.SubElement(childDataSet2, "HEADER")
@@ -215,16 +216,8 @@ data3 = ET.SubElement(dataset3, "DATA")
 
 wb_obj = openpyxl.load_workbook(fileXLSX) 
 sheet = wb_obj.active
-Rsh = (float(ROhm_value))*4.53235882651
-Rsh = round(Rsh, 3)
-RshOhmsqr = ET.SubElement(data3, "RSH_OHMSQR").text = str(Rsh)
+RcOhm = ET.SubElement(data3, "RC_OHM").text = ROhm_value
 ROhm = ET.SubElement(data3, "R_OHM").text = ROhm_value
-Rho = 290*(1E-6)*290*(1E-6)/(10*2*8.854*(1E-12)*11.68*483.78*(1E-4)*(sheet["B16"].value))
-Rho = round(Rho, 3)
-RhoKohmcm = ET.SubElement(data3, "RHO_KOHMCM").text = str(Rho)
-
-
-
 
 dom = xml.dom.minidom.parseString(ET.tostring(root))
 xml_string = dom.toprettyxml()
@@ -236,5 +229,5 @@ with open(fileIn, 'r') as fin1:
 with open(fileOut, 'w') as fout1:
 	fout1.write(part1 + ' encoding=\"{}\"'.format(m_encoding) + ' standalone=\"{}\"?>\n'.format(m_standalone)  + part2)
 	fout1.close()
-	
+
 os.remove(fileNew)
